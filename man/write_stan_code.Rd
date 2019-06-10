@@ -4,8 +4,8 @@
 \alias{write_stan_code}
 \title{Write Stan code for dynamic ecological inference model}
 \usage{
-write_stan_code(x, verbosity = 1L, sampling_model = "dirichlet",
-  est_n_evolve = FALSE)
+write_stan_code(x, est_n_evolve = FALSE, verbosity = 1L,
+  transition_model = "dirichlet", sampling_model = "dirichlet")
 }
 \arguments{
 \item{x}{Either (a) a matrix in which the element in row \eqn{t}, column
@@ -13,10 +13,10 @@ write_stan_code(x, verbosity = 1L, sampling_model = "dirichlet",
 vector \eqn{m} in time period \eqn{t} (\eqn{p_{tm}}) or (b) a list of
 population targets from which the matrix above can be created.}
 
-\item{sampling_model}{Either "multinomial" or "dirichlet"}
-
 \item{est_n_evolve}{If TRUE, then \eqn{n^{evol}} will modeled as a parameter
 rather than treated as data.}
+
+\item{sampling_model}{Either "multinomial" or "dirichlet"}
 
 \item{vebosity}{Scalar; if greater than 1, the stan code will be printed}
 }
