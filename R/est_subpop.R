@@ -69,7 +69,9 @@
 #' @seealso Devin Caughey and Mallory Wang. 2019. “Dynamic Ecological Inference
 #'     for Time-Varying Population Distributions Based on Sparse, Irregular, and
 #'     Noisy Marginal Data.” \emph{Political Analysis} 27 (3):
-#'     388–396. <https://doi.org/10.1017/pan.2019.4>. 
+#'     388–396. <https://doi.org/10.1017/pan.2019.4>.
+#'
+#' @examples 
 #' 
 #' @export
 
