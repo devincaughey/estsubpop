@@ -84,6 +84,7 @@ est_subpop <- function (design_ls,
                         n_evolve_meanlog = 10,
                         n_evolve_sdlog = NULL,
                         pi_prior = "raked",
+                        forms1,
                         gaps = NULL,
                         sampling_model = "dirichlet",
                         transition_model = "dirichlet",
@@ -109,7 +110,8 @@ est_subpop <- function (design_ls,
         pi_prior = pi_prior,
         gaps = gaps,
         target_ls = aux_info,
-        sampling_model = sampling_model)
+        sampling_model = sampling_model,
+        forms1 = forms1)
     stan_data <- do.call(estsubpop::make_stan_data, data_args)
     if (is.null(stan_code)) {
         stan_code <- write_stan_code(
