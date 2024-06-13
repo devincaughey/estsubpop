@@ -4,7 +4,7 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
                             n_evolve_meanlog = 10, n_evolve_sdlog = NULL,
                             pi_prior = "raked", gaps = NULL,
                             sampling_model = "dirichlet",
-                            forms1) {
+                            forms1 = NULL, data1 = NULL) {
   stopifnot(sampling_model %in% c("multinomial", "dirichlet"))
   stopifnot(n_evolve_meanlog < log(.Machine$double.xmax))
   if (is.null(n_sample)) {
@@ -29,9 +29,10 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
     pi_prior <- rep(1 / N, N)
   }
   if (identical(pi_prior, "raked")) {
-    init_ds <- estsubpop::make_design(data = XX, weights = ~1)
-    data1 <- target_ls[[which(!sapply(target_ls, is.null))[1]]]
-    if (missing(forms1)) {
+      init_ds <- estsubpop::make_design(data = XX, weights = ~1)
+      stopifnot(identical(is.null(forms1), is.null(data1)))
+    if (is.null(forms1) && is.null(data1)) {
+        data1 <- target_ls[[which(!sapply(target_ls, is.null))[1]]]
         forms1 <- plyr::llply(data1, function (x) {
             estsubpop::make_formula(xvars = setdiff(names(x), "Freq"))
         })
