@@ -37,7 +37,7 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
             (Aym <- paste0("A_y", y, "m", m))
             if (identical(sampling_model, "multinomial")) {
                 (cym <- paste0("counts_y", y, "m", m))
-                (dc <- paste0("  array", [", LL[y, m], "]", int<lower=0> ", cym,
+                (dc <- paste0("  array[", LL[y, m], "]", "int<lower=0> ", cym,
                               ";\n", "  matrix<lower=0,upper=1>[",
                               LL[y, m], ", N] ", Aym, ";"))
                 (mc <- paste0("  ", cym, " ~ multinomial(", Aym, 
