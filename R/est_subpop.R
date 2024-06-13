@@ -119,7 +119,7 @@ est_subpop <- function (design_ls,
             est_n_evolve = !is.null(n_evolve_sdlog))
     }
     stan_file <- write_stan_file(stan_code)
-    stan_mod <- cmdstan_model(stan_file, compile = FALSE)
+    stan_mod <- cmdstan_model(stan_file, compile = TRUE)
     stan_mod$check_syntax(pedantic = FALSE)
 
 
