@@ -35,7 +35,7 @@
 #' @param n_evolve_sdlog Standard deviation of the normal prior for
 #'     log(\eqn{n^{evol}}). If \code{NULL}, then \eqn{n^{evol}} is assigned the
 #'     value exp(\code{n_evolve_meanlog}) rather than modeled with a prior.
-#' @param pi_prior A character, one of \code{"Jeffreys"}, \code{"vague"}, or
+#' @param pi_prior A character, one of \code{"Jeffreys"}, \code{"uniform"}, or
 #'     \code{"raked"} (the default). If \code{"Jeffreys"}, the
 #'     \eqn{N} first-period cell proportions are given the Jeffreys prior
 #'     Dir(\eqn{1/2 * 1_N}), where \eqn{1_N} is an \eqn{N}-vector of 1s. If
