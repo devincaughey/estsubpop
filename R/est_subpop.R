@@ -118,13 +118,19 @@ est_subpop <- function (design_ls,
             verbosity = verbosity,
             est_n_evolve = !is.null(n_evolve_sdlog))
     }
-    stan_out <- stan(data = stan_data,
-                     model_code = stan_code,
-                     chains = chains,
-                     iter = iter,
+    stan_file <- write_stan_file(stan_code)
+    stan_mod <- cmdstan_model(stan_file, compile = FALSE)
+    stan_mod$check_syntax(pedantic = FALSE)
+
+
+    stan_out <- stan_mod$sample(
+                     data = stan_data,
                      refresh = refresh,
-                     thin = thin,
+                     chains = chains,
+                     thin = 1,
+                     iter_sampling = iter,
                      ...)
+
     return(list(stan_out = stan_out,
                 stan_data = stan_data,
                 aux_info = aux_info,
