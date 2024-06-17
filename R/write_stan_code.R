@@ -18,8 +18,8 @@
 #' @export
 
 write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
-                             transition_model = "multinomial", 
-                             sampling_model = "dirichlet") {
+                             transition_model = "dirichlet", 
+                             sampling_model = "multinomial") {
     stopifnot(sampling_model %in% c("multinomial", "dirichlet"))
     stopifnot(transition_model %in% c("logistic-normal", "dirichlet"))
     if (is.list(x)) 
