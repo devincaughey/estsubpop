@@ -53,7 +53,7 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
     (M_y <- sum(LL[y, ] > 0))           # number of margins observed in period y
     if (M_y == 0) next                  # if none, skip year
     for (m in 1:M_y) {
-      (G_name <- paste0("G", y, "m", m))
+      (G_name <- paste0("G_y", y, "m", m))
       (A_name <- paste0("A_y", y, "m", m))
       if (identical(sampling_model, "multinomial")) {
         (cnm <- paste0("counts_y", y, "m", m))
