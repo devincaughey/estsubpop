@@ -36,7 +36,7 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
             (nAym <- paste0("nA_", y, "m", m))
             (Aym <- paste0("A_y", y, "m", m))
             gym <- paste0("G_y", y, "m", m)
-            gc <- paste0("  int<lower=1> gym;")
+            gc <- paste0("  int<lower=1> ", gym, ";")
             if (identical(sampling_model, "multinomial")) {
                 (cym <- paste0("counts_y", y, "m", m))
                 (dc <- paste0(
