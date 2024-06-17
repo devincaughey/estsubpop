@@ -18,8 +18,8 @@
 #' @export
 
 write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
-                             transition_model = "dirichlet", 
-                             sampling_model = "dirichlet") {
+                             transition_model = "multinomial", 
+                             sampling_model = "multinomial") {
     stopifnot(sampling_model %in% c("multinomial", "dirichlet"))
     stopifnot(transition_model %in% c("logistic-normal", "dirichlet"))
     if (is.list(x)) 
@@ -35,18 +35,20 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
         for (m in 1:M_y) {
             (nAym <- paste0("nA_", y, "m", m))
             (Aym <- paste0("A_y", y, "m", m))
+            gym <- paste0("G_y", y, "m", m)
+            gc <- paste0("  int<lower=1> gym")
             if (identical(sampling_model, "multinomial")) {
                 (cym <- paste0("counts_y", y, "m", m))
-                (dc <- paste0("  array[", LL[y, m], "]", "int<lower=0> ", cym,
+                (dc <- paste0("  array[", gym, "]", "int<lower=0> ", cym,
                               ";\n", "  matrix<lower=0,upper=1>[",
-                              LL[y, m], ", N] ", Aym, ";"))
+                              gym, ", N] ", Aym, ";"))
                 (mc <- paste0("  ", cym, " ~ multinomial(", Aym, 
                               " * pi[", y, "]);"))
             }
             if (identical(sampling_model, "dirichlet")) {
                 (cym <- paste0("props_y", y, "m", m))
-                (dc <- paste0("  simplex[", LL[y, m], "] ", cym, 
-                              ";\n", "  matrix<lower=0,upper=1>[", LL[y, m],
+                (dc <- paste0("  simplex[", gym, "] ", cym, 
+                              ";\n", "  matrix<lower=0,upper=1>[", gym,
                               ", N] ", Aym, ";"))
                 (mc <- paste0(
                      "  profile(\"likelihood_", y, "_", m, "\") {",
@@ -55,7 +57,7 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
                  ))
             }
             tdc <- paste0(
-                "    matrix[", LL[y, m], ", N] ", nAym,
+                "    matrix[", gym, ", N] ", nAym,
                 " = n_sample[", y, ", ", m, "] * ", Aym, ";"
             )
             stan_code_to_add["data"] <-

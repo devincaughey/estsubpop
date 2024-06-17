@@ -53,6 +53,7 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
     (M_y <- sum(LL[y, ] > 0))           # number of margins observed in period y
     if (M_y == 0) next                  # if none, skip year
     for (m in 1:M_y) {
+      (G_name <- paste0("G", y, "m", m))
       (A_name <- paste0("A_y", y, "m", m))
       if (identical(sampling_model, "multinomial")) {
         (cnm <- paste0("counts_y", y, "m", m))
@@ -64,6 +65,7 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
       MM <- model.matrix(~. - 1, data = as.data.frame(margin_grp))
       colnames(MM) <- levels(margin_grp)
       margin_data[[A_name]] <- t(MM)
+      margin_data[[G_name]] <- LL[y, m]
       if (identical(sampling_model, "multinomial")) {
         margin_data[[cnm]] <- round(n_sample[y, m] * target_ls[[y]][[m]]$Freq /
                                     sum(target_ls[[y]][[m]]$Freq))
