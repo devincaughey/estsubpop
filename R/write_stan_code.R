@@ -36,20 +36,24 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
             (nAym <- paste0("nA_", y, "m", m))
             (Aym <- paste0("A_y", y, "m", m))
             gym <- paste0("G_y", y, "m", m)
-            gc <- paste0("  int<lower=1> gym")
+            gc <- paste0("  int<lower=1> gym;")
             if (identical(sampling_model, "multinomial")) {
                 (cym <- paste0("counts_y", y, "m", m))
-                (dc <- paste0("  array[", gym, "]", "int<lower=0> ", cym,
-                              ";\n", "  matrix<lower=0,upper=1>[",
-                              gym, ", N] ", Aym, ";"))
+                (dc <- paste0(
+                     gc,
+                     "\n  array[", gym, "] int<lower=0> ", cym,
+                     ";\n", "  matrix<lower=0,upper=1>[",
+                     gym, ", N] ", Aym, ";"))
                 (mc <- paste0("  ", cym, " ~ multinomial(", Aym, 
                               " * pi[", y, "]);"))
             }
             if (identical(sampling_model, "dirichlet")) {
                 (cym <- paste0("props_y", y, "m", m))
-                (dc <- paste0("  simplex[", gym, "] ", cym, 
-                              ";\n", "  matrix<lower=0,upper=1>[", gym,
-                              ", N] ", Aym, ";"))
+                (dc <- paste0(
+                     gc,
+                     "\n  simplex[", gym, "] ", cym, 
+                     ";\n", "  matrix<lower=0,upper=1>[", gym,
+                     ", N] ", Aym, ";"))
                 (mc <- paste0(
                      "  profile(\"likelihood_", y, "_", m, "\") {",
                      "\n    target += dirichlet_lpdf(", cym, " | ",
