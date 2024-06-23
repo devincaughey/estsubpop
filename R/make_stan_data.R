@@ -4,7 +4,8 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
                             n_evolve_meanlog = 10, n_evolve_sdlog = NULL,
                             pi_prior = "raked", gaps = NULL,
                             sampling_model = "dirichlet",
-                            forms1 = NULL, data1 = NULL) {
+                            forms1 = NULL, data1 = NULL,
+                            cell_matrix) {
   stopifnot(sampling_model %in% c("multinomial", "dirichlet"))
   stopifnot(n_evolve_meanlog < log(.Machine$double.xmax))
   if (is.null(n_sample)) {
@@ -14,6 +15,10 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
     gaps <- estsubpop::make_gaps(names(target_ls))
   }
   XX <- estsubpop::make_XX(target_ls)   # matrix of all cells (full cross-tab)
+  if (!missing(cell_matrix)) {
+      XX <- merge(XX, cell_matrix, all.y = TRUE)
+  }
+  MM <- model.matrix(~ . - Freq, XX)
   LL <- estsubpop::make_LL(target_ls)   # info on margins and groups per margin
   N <- nrow(XX)                         # number of cells
   Y <- nrow(LL)                         # number of periods to estimate
@@ -62,9 +67,9 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
         (cnm <- paste0("props_y", y, "m", m))
       }
       margin_grp <- interaction(as.list(XX[var_name_ls[[y]][[m]]]), drop = TRUE)
-      MM <- model.matrix(~. - 1, data = as.data.frame(margin_grp))
-      colnames(MM) <- levels(margin_grp)
-      margin_data[[A_name]] <- t(MM)
+      MM_ym <- model.matrix(~. - 1, data = as.data.frame(margin_grp))
+      colnames(MM_ym) <- levels(margin_grp)
+      margin_data[[A_name]] <- t(MM_ym)
       margin_data[[G_name]] <- LL[y, m]
       if (identical(sampling_model, "multinomial")) {
         margin_data[[cnm]] <- round(n_sample[y, m] * target_ls[[y]][[m]]$Freq /
@@ -77,12 +82,12 @@ make_stan_data <- function (target_ls, n_sample = NULL, n_prior = "vague",
     }
   }
   if (is.null(n_evolve_sdlog)) {
-    return(c(margin_data, list(Y = Y, N = N, M = M,
+    return(c(margin_data, list(Y = Y, N = N, M = M, MM = MM, ncol_MM = ncol(MM),
                              n_sample = n_sample, n_prior = n_prior,
                              n_evolve = exp(n_evolve_meanlog),
                              pi0 = pi_prior, Ygaps = as.array(gaps))))
   } else {
-    return(c(margin_data, list(Y = Y, N = N, M = M,
+    return(c(margin_data, list(Y = Y, N = N, M = M, MM = MM, ncol_MM = ncol(MM),
                              n_sample = n_sample, n_prior = n_prior,
                              n_evolve_meanlog = n_evolve_meanlog,
                              n_evolve_sdlog = n_evolve_sdlog,

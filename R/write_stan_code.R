@@ -22,12 +22,15 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
                              sampling_model = "multinomial") {
     stopifnot(sampling_model %in% c("multinomial", "dirichlet"))
     stopifnot(transition_model %in% c("logistic-normal", "dirichlet"))
-    if (is.list(x)) 
+    if (is.list(x)) {
         LL <- estsubpop::make_LL(x)
-    else LL <- x
+    } else {
+        LL <- x
+    }
     Y <- nrow(LL)
-    stan_code_to_add <- character(3)
-    names(stan_code_to_add) <- c("data", "transformed data", "model")
+    stan_code_to_add <- character(4)
+    names(stan_code_to_add) <- c("data", "transformed data",
+                                 "model")
     for (y in 1:Y) {
         (M_y <- sum(LL[y, ] > 0))
         if (M_y == 0) 
@@ -44,8 +47,12 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
                      "\n  array[", gym, "] int<lower=0> ", cym,
                      ";\n", "  matrix<lower=0,upper=1>[",
                      gym, ", N] ", Aym, ";"))
-                (mc <- paste0("  ", cym, " ~ multinomial(", Aym, 
-                              " * pi[", y, "]);"))
+                (mc <- paste0(
+                     "  profile(\"likelihood_", y, "_", m, "\") {",
+                     "\n    target += multinomial_lupmf(", cym, " | ",
+                     Aym, " * pi[", y, "]);", "\n  }"
+                 ))
+                tdc <- NULL
             }
             if (identical(sampling_model, "dirichlet")) {
                 (cym <- paste0("props_y", y, "m", m))
@@ -56,21 +63,20 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
                      ", N] ", Aym, ";"))
                 (mc <- paste0(
                      "  profile(\"likelihood_", y, "_", m, "\") {",
-                     "\n    target += dirichlet_lpdf(", cym, " | ",
+                     "\n    target += dirichlet_lupdf(", cym, " | ",
                      nAym, " * pi[", y, "]);", "\n  }"
                  ))
+                tdc <- paste0(
+                    "    matrix[", gym, ", N] ", nAym,
+                    " = n_sample[", y, ", ", m, "] * ", Aym, ";"
+                )
             }
-            tdc <- paste0(
-                "    matrix[", gym, ", N] ", nAym,
-                " = n_sample[", y, ", ", m, "] * ", Aym, ";"
-            )
             stan_code_to_add["data"] <-
                 paste(stan_code_to_add["data"], dc, sep = "\n")
             stan_code_to_add["transformed data"] <-
                 paste(stan_code_to_add["transformed data"], tdc, sep = "\n")
             stan_code_to_add["model"] <-
                 paste(stan_code_to_add["model"], mc, sep = "\n")
-            
         }
     }
     if (isTRUE(est_n_evolve)) {
@@ -96,10 +102,12 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
         "\n  int<lower=1> N; // number of cells",
         "\n  int<lower=1> Y; // number of time periods",
         "\n  int<lower=1> M; // maximum number of margins in any period",
+        "\n  int<lower=1> ncol_MM;",
+        "\n  matrix[N, ncol_MM] MM; // model matrix",
         "\n  matrix<lower=0>[Y, M] n_sample;",
-        "\n  real<lower=0> n_prior;", 
+        "\n  real<lower=0> n_prior;",
         n_evolve_data_code,
-        "\n  array[Y] real Ygaps; // no. of periods skipped between estimated periods",
+        "\n  array[Y] real Ygaps; // no. periods skipped btwn estimates",
         "\n  simplex[N] pi0;", 
         stan_code_to_add["data"],
         "\n}",
@@ -107,18 +115,23 @@ write_stan_code <- function (x, est_n_evolve = FALSE, verbosity = 1L,
         stan_code_to_add["transformed data"],
         "\n}",
         "\nparameters {",
-        "\n  array[Y] simplex[N] pi; // period-specific cell probs", 
+        "\n  array[Y] simplex[N] pi; // period-specific cell probs",
         n_evolve_param_code,
         "\n}",
-        "\nmodel {", n_evolve_model_code,
-        "\n  pi[1] ~ dirichlet(pi0 * n_prior);",
+        "\ntransformed parameters {",
+        "\n  vector[N] mu0 = MM * b0 - mean(MM * b0);",
+        "\n}",
+        "\nmodel {",
+        n_evolve_model_code,
+        "\n  b0 ~ std_normal();",
+        "\n  n_prior ~ gamma(1, 0.01);",
+        "\n  target += dirichlet_lupdf(pi[1] | softmax(mu0) * n_prior);",
         "\n  for (y in 2:Y) {",
-        "\n    pi[y] ~ dirichlet(pi[y - 1] * n_evolve / Ygaps[y]);",
-        "\n  }", 
+        "\n    target += dirichlet_lupdf(pi[y] | pi[y - 1] * n_evolve / Ygaps[y]);",
+        "\n  }",
         stan_code_to_add["model"],
         "\n}",
         "\n")
-    if (verbosity >= 1) 
-        cat(stan_code)
+    if (verbosity >= 1) cat(stan_code)
     invisible(stan_code)
 }
