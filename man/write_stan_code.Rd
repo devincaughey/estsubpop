@@ -2,10 +2,15 @@
 % Please edit documentation in R/write_stan_code.R
 \name{write_stan_code}
 \alias{write_stan_code}
-\title{Write Stan code for dynamic ecological inference model}
+\title{Write `cmdstanr`-style Stan code for dynamic ecological inference model}
 \usage{
-write_stan_code(x, est_n_evolve = FALSE, verbosity = 1L,
-  transition_model = "dirichlet", sampling_model = "dirichlet")
+write_stan_code(
+  x,
+  est_n_evolve = FALSE,
+  verbosity = 1L,
+  transition_model = "dirichlet",
+  sampling_model = "dirichlet"
+)
 }
 \arguments{
 \item{x}{Either (a) a matrix in which the element in row \eqn{t}, column
@@ -26,5 +31,5 @@ a character string
 \description{
 Given information on the variable subsets in each time period,
 \code{write_stan_code} writes Stan code for estimating the corresponding
-model.
+model with `cmdstanr`.
 }

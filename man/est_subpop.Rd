@@ -4,12 +4,27 @@
 \alias{est_subpop}
 \title{Fit a dynamic ecological inference model}
 \usage{
-est_subpop(design_ls, formulae_ls, periods_to_est, period_var = "YEAR",
-  n_sample = NULL, n_prior = NULL, n_evolve_meanlog = 10,
-  n_evolve_sdlog = NULL, pi_prior = "raked", gaps = NULL,
-  sampling_model = "dirichlet", transition_model = "dirichlet",
-  verbosity = 1L, chains = 4L, iter = 10000, refresh = 100,
-  thin = 1L, stan_code = NULL, ...)
+est_subpop(
+  design_ls,
+  formulae_ls,
+  periods_to_est,
+  period_var = "YEAR",
+  n_sample = NULL,
+  n_prior = NULL,
+  n_evolve_meanlog = 10,
+  n_evolve_sdlog = NULL,
+  pi_prior = "raked",
+  gaps = NULL,
+  sampling_model = "dirichlet",
+  transition_model = "dirichlet",
+  verbosity = 1L,
+  chains = 4L,
+  iter = 10000,
+  refresh = 100,
+  thin = 1L,
+  stan_code = NULL,
+  ...
+)
 }
 \arguments{
 \item{design_ls}{List of survey design objects, as created by the
@@ -49,7 +64,7 @@ of \code{n_prior}.}
 log(\eqn{n^{evol}}). If \code{NULL}, then \eqn{n^{evol}} is assigned the
 value exp(\code{n_evolve_meanlog}) rather than modeled with a prior.}
 
-\item{pi_prior}{A character, one of \code{"Jeffreys"}, \code{"vague"}, or
+\item{pi_prior}{A character, one of \code{"Jeffreys"}, \code{"uniform"}, or
 \code{"raked"} (the default). If \code{"Jeffreys"}, the
 \eqn{N} first-period cell proportions are given the Jeffreys prior
 Dir(\eqn{1/2 * 1_N}), where \eqn{1_N} is an \eqn{N}-vector of 1s. If

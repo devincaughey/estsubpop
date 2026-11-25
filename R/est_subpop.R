@@ -35,7 +35,7 @@
 #' @param n_evolve_sdlog Standard deviation of the normal prior for
 #'     log(\eqn{n^{evol}}). If \code{NULL}, then \eqn{n^{evol}} is assigned the
 #'     value exp(\code{n_evolve_meanlog}) rather than modeled with a prior.
-#' @param pi_prior A character, one of \code{"Jeffreys"}, \code{"vague"}, or
+#' @param pi_prior A character, one of \code{"Jeffreys"}, \code{"uniform"}, or
 #'     \code{"raked"} (the default). If \code{"Jeffreys"}, the
 #'     \eqn{N} first-period cell proportions are given the Jeffreys prior
 #'     Dir(\eqn{1/2 * 1_N}), where \eqn{1_N} is an \eqn{N}-vector of 1s. If
@@ -84,6 +84,8 @@ est_subpop <- function (design_ls,
                         n_evolve_meanlog = 10,
                         n_evolve_sdlog = NULL,
                         pi_prior = "raked",
+                        forms1 = NULL,
+                        data1 = NULL,
                         gaps = NULL,
                         sampling_model = "dirichlet",
                         transition_model = "dirichlet",
@@ -109,7 +111,8 @@ est_subpop <- function (design_ls,
         pi_prior = pi_prior,
         gaps = gaps,
         target_ls = aux_info,
-        sampling_model = sampling_model)
+        sampling_model = sampling_model,
+        forms1 = forms1, data1 = data1)
     stan_data <- do.call(estsubpop::make_stan_data, data_args)
     if (is.null(stan_code)) {
         stan_code <- write_stan_code(
@@ -118,13 +121,19 @@ est_subpop <- function (design_ls,
             verbosity = verbosity,
             est_n_evolve = !is.null(n_evolve_sdlog))
     }
-    stan_out <- stan(data = stan_data,
-                     model_code = stan_code,
-                     chains = chains,
-                     iter = iter,
+    stan_file <- write_stan_file(stan_code)
+    stan_mod <- cmdstan_model(stan_file, compile = TRUE)
+    stan_mod$check_syntax(pedantic = FALSE)
+
+
+    stan_out <- stan_mod$sample(
+                     data = stan_data,
                      refresh = refresh,
-                     thin = thin,
+                     chains = chains,
+                     thin = 1,
+                     iter_sampling = iter,
                      ...)
+
     return(list(stan_out = stan_out,
                 stan_data = stan_data,
                 aux_info = aux_info,
